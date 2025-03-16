@@ -1,0 +1,55 @@
+name: low-code-automation
+
+services:
+
+  workflows:
+    container_name: workflows
+    restart: unless-stopped
+    image: docker.n8n.io/n8nio/n8n:latest
+    volumes:
+      - ./.storage/n8n:/home/node/.n8n
+    ports:
+      - 5678:5678 # use with ngrok as `ngrok http --url=vast-grossly-eft.ngrok-free.app 5678`
+    environment:
+      # n8n deployment variables https://docs.n8n.io/hosting/configuration/environment-variables/deployment/
+      N8N_PROTOCOL: http
+      N8N_HOST: "${HTTP_HOST}"
+      N8N_PORT: 5678
+      N8N_PATH: /
+      N8N_EDITOR_BASE_URL: "${HTTP_PROTOCOL}://${HTTP_HOST}"
+      VUE_APP_URL_BASE_API: "${HTTP_PROTOCOL}://${HTTP_HOST}"
+      WEBHOOK_URL: "${HTTP_PROTOCOL}://${HTTP_HOST}"
+      N8N_TEMPLATES_ENABLED: "true"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "true"
+      N8N_SECURE_COOKIE: "${N8N_SECURE_COOKIE}"
+
+  mysql:
+    container_name: mysql
+    profiles:
+      - db-mysql
+    restart: unless-stopped
+    image: mysql:latest
+    volumes:
+      - ./.storage/mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+
+  postgres:
+    container_name: postgres
+    profiles:
+      - db-postgres
+    restart: unless-stopped
+    image: postgres:latest
+    volumes:
+      - ./.storage/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
